@@ -1,67 +1,7 @@
 import React from 'react';
 import '../styles/ResultView.css';
 import { saveAs } from 'file-saver';
-
-// 타입 정의
-interface InterpretationResult {
-  fileType: 'AutoCAD' | 'HWP';
-  fileName: string;
-  fileSize: number;
-  interpretation?: string;
-}
-
-interface AutoCADData extends InterpretationResult {
-  fileType: 'AutoCAD';
-  analysis: {
-    totalElements: number;
-    layers: string[];
-    dimensions: {
-      width: number;
-      height: number;
-    };
-  };
-  elements: Array<{
-    type: string;
-    layer: string;
-    coordinates?: [number, number][];
-    center?: [number, number];
-    radius?: number;
-    content?: string;
-    position?: [number, number];
-  }>;
-}
-
-interface HWPData extends InterpretationResult {
-  fileType: 'HWP';
-  analysis: {
-    pageCount: number;
-    charCount: number;
-    imageCount: number;
-  };
-  content: {
-    title: string;
-    sections: Array<{
-      type: 'text' | 'table' | 'image';
-      content?: string;
-      rows?: number;
-      columns?: number;
-      description?: string;
-    }>;
-  };
-}
-
-// InterpreterService 클래스 정의
-class InterpreterService {
-  async exportToPDF(data: InterpretationResult): Promise<Blob> {
-    // PDF 생성 로직 (실제 구현체는 여기에 들어갈 것)
-    return new Blob(['PDF 내용'], { type: 'application/pdf' });
-  }
-
-  async exportToReport(data: InterpretationResult): Promise<Blob> {
-    // 보고서 생성 로직 (실제 구현체는 여기에 들어갈 것)
-    return new Blob(['보고서 내용'], { type: 'text/plain' });
-  }
-}
+import { InterpreterService, InterpretationResult, AutoCADData, HWPData } from '../utils/interpreterService';
 
 interface ResultViewProps {
   data: InterpretationResult;
@@ -82,11 +22,35 @@ const ResultView: React.FC<ResultViewProps> = ({ data }) => {
   
   const handleExportToPDF = async () => {
     try {
-      const pdfBlob = await interpreterService.exportToPDF(data);
-      saveAs(pdfBlob, `${data.fileName.split('.')[0]}_report.pdf`);
+      // PDF 생성 로직 (실제로는 HTML을 만들어 새 창에서 인쇄 대화상자를 표시)
+      const htmlContent = await interpreterService.exportToPDF(data);
+      
+      // HTML blob 생성
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      
+      // 임시 URL 생성 및 새 창에서 열기
+      const url = URL.createObjectURL(blob);
+      const newWindow = window.open(url, '_blank');
+      
+      if (!newWindow) {
+        alert('팝업 차단이 활성화되어 있습니다. PDF로 보려면 팝업을 허용해주세요.');
+        return;
+      }
+      
+      // 새 창에서 열린 후 인쇄 대화상자 표시
+      newWindow.onload = () => {
+        setTimeout(() => {
+          newWindow.print();
+        }, 1000);
+      };
+      
+      // URL 객체 정리
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 60000);
     } catch (error) {
       console.error('PDF 내보내기 중 오류가 발생했습니다:', error);
-      alert('PDF 내보내기에 실패했습니다.');
+      alert('PDF 내보내기에 실패했습니다. 다시 시도해주세요.');
     }
   };
   

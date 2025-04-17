@@ -577,12 +577,11 @@ export class InterpreterService {
   /**
    * 해석 결과를 PDF로 내보내기
    * @param data 해석 결과 데이터
-   * @returns Promise<Blob> PDF 파일 Blob
+   * @returns Promise<string> HTML 문자열
    */
-  public async exportToPDF(data: InterpretationResult): Promise<Blob> {
+  public async exportToPDF(data: InterpretationResult): Promise<string> {
     try {
-      // PDF 문서 생성 (실제로는 PDF 라이브러리를 사용해야 함)
-      // HTML 형식으로 구성
+      // PDF 문서 생성 (HTML 형식으로 구성)
       const isAutoCAD = data.fileType === 'AutoCAD';
       
       let htmlContent = `
@@ -592,6 +591,29 @@ export class InterpreterService {
           <title>${data.fileName} - 해석 보고서</title>
           <meta charset="UTF-8">
           <style>
+            @media print {
+              body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+              h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+              h2 { color: #3498db; margin-top: 20px; break-after: avoid; }
+              h3 { color: #2c3e50; margin-top: 15px; break-after: avoid; }
+              .section { margin: 15px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px; }
+              .info-item { margin: 8px 0; }
+              .item-list { list-style-type: none; padding-left: 0; }
+              .item-list li { margin: 10px 0; padding: 10px; background-color: #f0f0f0; border-left: 3px solid #3498db; }
+              .interpretation { margin-top: 25px; padding: 15px; background-color: #e8f4fc; border-radius: 5px; border-left: 5px solid #3498db; }
+              table { width: 100%; border-collapse: collapse; margin: 15px 0; page-break-inside: avoid; }
+              table, th, td { border: 1px solid #ddd; }
+              th, td { padding: 10px; text-align: left; }
+              th { background-color: #f2f2f2; }
+              .footer { margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
+              .page-break { page-break-after: always; }
+              
+              @page {
+                size: A4;
+                margin: 2cm;
+              }
+            }
+            
             body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
             h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
             h2 { color: #3498db; margin-top: 20px; }
@@ -651,6 +673,8 @@ export class InterpreterService {
               <td>라벨, 치수, 주석 정보를 표현</td>
             </tr>
           </table>
+          
+          <div class="page-break"></div>
           
           <h2>요소 목록</h2>
           <ul class="item-list">
@@ -715,6 +739,8 @@ export class InterpreterService {
             </tr>
           </table>
           
+          <div class="page-break"></div>
+          
           <h2>섹션 목록</h2>
           <ul class="item-list">
         `;
@@ -752,6 +778,7 @@ export class InterpreterService {
       // 해석 내용 추가
       if (data.interpretation) {
         htmlContent += `
+          <div class="page-break"></div>
           <h2>일반인을 위한 해석</h2>
           <div class="interpretation">
             ${data.interpretation.split('\n').map(line => `<p>${line}</p>`).join('')}
@@ -764,17 +791,24 @@ export class InterpreterService {
           <div class="footer">
             <p>생성 시간: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
             <p>본 보고서는 자동 생성되었으며, 전문가의 검토가 필요합니다.</p>
+            <p><strong>CAD Interpreter</strong> - AutoCAD 도면 HWP 해석기 출력물</p>
           </div>
+          
+          <script>
+            // 페이지 로드 완료 후 프린트 대화상자가 자동으로 표시됨
+            window.onload = function() {
+              // 필요한 초기화 작업
+            };
+          </script>
         </body>
         </html>
       `;
       
-      // 실제 프로덕션 환경에서는 PDF 변환 라이브러리 사용 필요
-      // 현재는 HTML을 텍스트로 변환하여 반환
-      return new Blob([htmlContent], { type: 'application/pdf' });
+      // HTML 문자열 반환
+      return htmlContent;
     } catch (error) {
-      console.error('PDF 생성 중 오류 발생:', error);
-      throw new Error('PDF 생성에 실패했습니다.');
+      console.error('보고서 생성 중 오류 발생:', error);
+      throw new Error('보고서 생성에 실패했습니다.');
     }
   }
   
