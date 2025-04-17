@@ -1,46 +1,98 @@
-# Getting Started with Create React App
+# AutoCAD 도면 HWP 해석기
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+AutoCAD 도면을 HWP로 읽고 도면의 내용을 해석해주는 애플리케이션입니다. 이 프로젝트는 도면 전문가가 아닌 일반인도 쉽게 도면 내용을 이해할 수 있도록 설계되었습니다.
 
-## Available Scripts
+## 주요 기능
 
-In the project directory, you can run:
+- AutoCAD(.dwg) 파일 업로드 및 해석
+- HWP 파일 업로드 및 해석
+- 일반인을 위한 상세 도면 해석 제공
+- 도면의 구조적 특징 자동 분석 (방 크기, 구조 등)
+- 해석 결과 시각화
+- PDF로 내보내기
+- 보고서 생성
 
-### `npm start`
+## 일반인을 위한 도면 해석 기능
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+이 애플리케이션은 기존의 도면 해석 서비스와 달리, 전문 지식이 없는 일반인도 도면을 쉽게 이해할 수 있도록 다음과 같은 해석 정보를 제공합니다:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- 도면의 용도 (평면도, 입면도, 기계 설계도 등) 자동 식별
+- 구조물의 크기와 치수 정보 자동 계산
+- 방의 개수, 크기, 면적 등 공간 정보 추출
+- 건물 또는 구조물의 추정 용도 제안
+- 도면 내 중요 요소 강조 및 설명
 
-### `npm test`
+## 기술 스택
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- React
+- TypeScript
+- 파일 처리 API
+- 도면 분석 알고리즘
 
-### `npm run build`
+## 설치 및 실행 방법
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 필수 요구사항
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Node.js 14.0.0 이상
+- npm 6.0.0 이상
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 설치
 
-### `npm run eject`
+```bash
+# 저장소 클론
+git clone https://github.com/rayk2234/CADinterpreter.git
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+# 디렉토리 이동
+cd CADinterpreter
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# 종속성 설치
+npm install
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### 개발 서버 실행
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```bash
+npm start
+```
 
-## Learn More
+### 프로덕션 빌드
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+npm run build
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 사용 방법
+
+1. 애플리케이션에 접속합니다.
+2. AutoCAD(.dwg) 또는 HWP 파일을 업로드합니다.
+3. 파일이 자동으로 해석됩니다.
+4. 해석 결과를 확인합니다. 일반인을 위한 해석 섹션에서 도면에 대한 상세 설명을 볼 수 있습니다.
+5. 필요에 따라 PDF로 내보내거나 보고서를 생성합니다.
+
+## 제한 사항
+
+- 현재 버전에서는 실제 파일 해석 기능이 구현되어 있지 않고 더미 데이터를 사용합니다.
+- 향후 버전에서 실제 AutoCAD 및 HWP 파일 해석 기능이 추가될 예정입니다.
+
+## 향후 개발 계획
+
+- 실제 AutoCAD 파일 파싱 및 해석 기능 구현
+- 실제 HWP 파일 파싱 및 해석 기능 구현
+- 3D 도면 지원
+- AI 기반 도면 해석 기능 강화
+- 도면 편집 기능
+- 사용자 계정 및 프로젝트 관리 기능
+
+## GitHub Pages 배포
+
+이 프로젝트는 GitHub Pages에 배포되어 있습니다:
+[https://rayk2234.github.io/CADinterpreter](https://rayk2234.github.io/CADinterpreter)
+
+## 라이선스
+
+MIT License
+
+## 프로젝트 정보
+
+이 프로젝트는 AutoCAD 도면과 HWP 문서를 일반인도 쉽게 이해할 수 있도록 해석하는 도구를 제공하는 것을 목표로 합니다. 
+도면 해석에 대한 어려움을 해소하고, 전문 지식 없이도 도면 내용을 이해할 수 있도록 도와줍니다.

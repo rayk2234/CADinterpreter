@@ -1,0 +1,130 @@
+.result-view-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.result-view-container h2 {
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.result-view-container h3 {
+  color: #3498db;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.result-view-container h4 {
+  color: #2c3e50;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 5px;
+}
+
+.file-info, .elements-info, .content-info {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.elements-list ul, .content-sections ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+.elements-list li, .content-sections li {
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border-left: 3px solid #3498db;
+}
+
+.autocad-data, .hwp-data {
+  padding: 10px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+  justify-content: flex-end;
+}
+
+.action-button {
+  padding: 10px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+  background-color: #2980b9;
+}
+
+/* 일반인을 위한 해석 섹션 스타일 */
+.interpretation {
+  margin-top: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #eaf7ff;
+  border-radius: 8px;
+  border-left: 4px solid #4dabf7;
+}
+
+.interpretation h4 {
+  color: #1971c2;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.interpretation-content {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #343a40;
+  white-space: pre-line; /* 줄바꿈 인식 */
+}
+
+@media (max-width: 768px) {
+  .result-view-container {
+    padding: 15px;
+  }
+  
+  .result-view-container h2 {
+    font-size: 1.5rem;
+  }
+  
+  .result-view-container h3 {
+    font-size: 1.3rem;
+  }
+  
+  .result-view-container h4 {
+    font-size: 1.1rem;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+  
+  .interpretation {
+    padding: 10px;
+  }
+} 
