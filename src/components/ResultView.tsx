@@ -93,10 +93,16 @@ const ResultView: React.FC<ResultViewProps> = ({ data }) => {
   const handleGenerateReport = async () => {
     try {
       const reportBlob = await interpreterService.exportToReport(data);
+      
+      // 생성된 보고서가 비어있는지 확인
+      if (reportBlob.size === 0) {
+        throw new Error('생성된 보고서가 비어 있습니다.');
+      }
+      
       saveAs(reportBlob, `${data.fileName.split('.')[0]}_report.txt`);
     } catch (error) {
       console.error('보고서 생성 중 오류가 발생했습니다:', error);
-      alert('보고서 생성에 실패했습니다.');
+      alert('보고서 생성에 실패했습니다. 다시 시도해주세요.');
     }
   };
   

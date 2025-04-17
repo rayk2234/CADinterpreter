@@ -582,7 +582,7 @@ export class InterpreterService {
   public async exportToPDF(data: InterpretationResult): Promise<Blob> {
     try {
       // PDF 문서 생성 (실제로는 PDF 라이브러리를 사용해야 함)
-      // 더미 데이터를 HTML 형식으로 구성
+      // HTML 형식으로 구성
       const isAutoCAD = data.fileType === 'AutoCAD';
       
       let htmlContent = `
@@ -590,15 +590,22 @@ export class InterpreterService {
         <html>
         <head>
           <title>${data.fileName} - 해석 보고서</title>
+          <meta charset="UTF-8">
           <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { color: #2c3e50; }
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+            h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
             h2 { color: #3498db; margin-top: 20px; }
-            .section { margin: 15px 0; padding: 10px; background-color: #f8f9fa; border-radius: 5px; }
-            .info-item { margin: 5px 0; }
+            h3 { color: #2c3e50; margin-top: 15px; }
+            .section { margin: 15px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px; }
+            .info-item { margin: 8px 0; }
             .item-list { list-style-type: none; padding-left: 0; }
-            .item-list li { margin: 8px 0; padding: 8px; background-color: #f0f0f0; border-left: 3px solid #3498db; }
-            .interpretation { margin-top: 20px; padding: 15px; background-color: #e8f4fc; border-radius: 5px; }
+            .item-list li { margin: 10px 0; padding: 10px; background-color: #f0f0f0; border-left: 3px solid #3498db; }
+            .interpretation { margin-top: 25px; padding: 15px; background-color: #e8f4fc; border-radius: 5px; border-left: 5px solid #3498db; }
+            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+            table, th, td { border: 1px solid #ddd; }
+            th, td { padding: 10px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            .footer { margin-top: 30px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
           </style>
         </head>
         <body>
@@ -607,6 +614,7 @@ export class InterpreterService {
             <div class="info-item"><strong>파일명:</strong> ${data.fileName}</div>
             <div class="info-item"><strong>파일 크기:</strong> ${(data.fileSize / 1024).toFixed(2)} KB</div>
             <div class="info-item"><strong>파일 유형:</strong> ${data.fileType}</div>
+            <div class="info-item"><strong>생성 날짜:</strong> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</div>
           </div>
       `;
       
@@ -620,13 +628,40 @@ export class InterpreterService {
             <div class="info-item"><strong>크기:</strong> ${data.analysis.dimensions.width} x ${data.analysis.dimensions.height}</div>
           </div>
           
+          <h2>요소 분석</h2>
+          <table>
+            <tr>
+              <th>요소 유형</th>
+              <th>개수</th>
+              <th>주요 특징</th>
+            </tr>
+            <tr>
+              <td>선 (Line)</td>
+              <td>${data.elements.filter(e => e.type === 'line').length}</td>
+              <td>구조적 프레임, 벽체, 경계선 등을 표현</td>
+            </tr>
+            <tr>
+              <td>원 (Circle)</td>
+              <td>${data.elements.filter(e => e.type === 'circle').length}</td>
+              <td>기둥, 원형 구조물, 장치 등을 표현</td>
+            </tr>
+            <tr>
+              <td>텍스트 (Text)</td>
+              <td>${data.elements.filter(e => e.type === 'text').length}</td>
+              <td>라벨, 치수, 주석 정보를 표현</td>
+            </tr>
+          </table>
+          
           <h2>요소 목록</h2>
           <ul class="item-list">
         `;
         
-        // 요소 목록 추가
-        data.elements.forEach(element => {
+        // 요소 목록 추가 (최대 15개까지만)
+        const maxElements = Math.min(data.elements.length, 15);
+        for (let i = 0; i < maxElements; i++) {
+          const element = data.elements[i];
           let details = '';
+          
           if (element.type === 'line') {
             details = `선 (${element.coordinates[0].join(',')} - ${element.coordinates[1].join(',')})`;
           } else if (element.type === 'circle') {
@@ -638,7 +673,11 @@ export class InterpreterService {
           htmlContent += `
             <li><strong>${element.type}</strong>: ${details} (레이어: ${element.layer})</li>
           `;
-        });
+        }
+        
+        if (data.elements.length > maxElements) {
+          htmlContent += `<li>... 외 ${data.elements.length - maxElements}개 요소</li>`;
+        }
         
         htmlContent += `</ul>`;
       } else if (!isAutoCAD && 'content' in data) {
@@ -652,15 +691,46 @@ export class InterpreterService {
             <div class="info-item"><strong>이미지 수:</strong> ${data.analysis.imageCount}</div>
           </div>
           
+          <h2>문서 구성 분석</h2>
+          <table>
+            <tr>
+              <th>섹션 유형</th>
+              <th>개수</th>
+              <th>주요 특징</th>
+            </tr>
+            <tr>
+              <td>텍스트 (Text)</td>
+              <td>${data.content.sections.filter(s => s.type === 'text').length}</td>
+              <td>문서의 본문 내용</td>
+            </tr>
+            <tr>
+              <td>표 (Table)</td>
+              <td>${data.content.sections.filter(s => s.type === 'table').length}</td>
+              <td>구조화된 데이터 표현</td>
+            </tr>
+            <tr>
+              <td>이미지 (Image)</td>
+              <td>${data.content.sections.filter(s => s.type === 'image').length}</td>
+              <td>그림, 도표, 사진 등</td>
+            </tr>
+          </table>
+          
           <h2>섹션 목록</h2>
           <ul class="item-list">
         `;
         
-        // 섹션 목록 추가
-        data.content.sections.forEach(section => {
+        // 섹션 목록 추가 (최대 10개까지만)
+        const maxSections = Math.min(data.content.sections.length, 10);
+        for (let i = 0; i < maxSections; i++) {
+          const section = data.content.sections[i];
           let details = '';
+          
           if (section.type === 'text') {
             details = section.content;
+            // 긴 텍스트는 잘라내기
+            if (details.length > 100) {
+              details = details.substring(0, 100) + '...';
+            }
           } else if (section.type === 'table') {
             details = `${section.rows}x${section.columns} 표`;
           } else if (section.type === 'image') {
@@ -670,7 +740,11 @@ export class InterpreterService {
           htmlContent += `
             <li><strong>${section.type === 'text' ? '텍스트' : section.type === 'table' ? '표' : '이미지'}</strong>: ${details}</li>
           `;
-        });
+        }
+        
+        if (data.content.sections.length > maxSections) {
+          htmlContent += `<li>... 외 ${data.content.sections.length - maxSections}개 섹션</li>`;
+        }
         
         htmlContent += `</ul>`;
       }
@@ -680,21 +754,23 @@ export class InterpreterService {
         htmlContent += `
           <h2>일반인을 위한 해석</h2>
           <div class="interpretation">
-            ${data.interpretation}
+            ${data.interpretation.split('\n').map(line => `<p>${line}</p>`).join('')}
           </div>
         `;
       }
       
       // HTML 문서 마무리
       htmlContent += `
-          <div style="margin-top: 30px; font-size: 12px; color: #777;">
-            생성 시간: ${new Date().toLocaleString()}
+          <div class="footer">
+            <p>생성 시간: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+            <p>본 보고서는 자동 생성되었으며, 전문가의 검토가 필요합니다.</p>
           </div>
         </body>
         </html>
       `;
       
-      // Blob 생성 (실제로는 PDF 변환이 필요하지만, 여기서는 HTML을 그대로 사용)
+      // 실제 프로덕션 환경에서는 PDF 변환 라이브러리 사용 필요
+      // 현재는 HTML을 텍스트로 변환하여 반환
       return new Blob([htmlContent], { type: 'application/pdf' });
     } catch (error) {
       console.error('PDF 생성 중 오류 발생:', error);
@@ -711,25 +787,39 @@ export class InterpreterService {
     try {
       // 보고서 내용 구성
       const isAutoCAD = data.fileType === 'AutoCAD';
-      let reportContent = `# ${data.fileName} - 해석 보고서\n\n`;
       
-      // 기본 정보
-      reportContent += `## 기본 정보\n`;
-      reportContent += `- 파일명: ${data.fileName}\n`;
-      reportContent += `- 파일 크기: ${(data.fileSize / 1024).toFixed(2)} KB\n`;
-      reportContent += `- 파일 유형: ${data.fileType}\n\n`;
+      let reportContent = `==========================================
+${data.fileName} - 해석 보고서
+==========================================
+생성 날짜: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+
+[기본 정보]
+파일명: ${data.fileName}
+파일 크기: ${(data.fileSize / 1024).toFixed(2)} KB
+파일 유형: ${data.fileType}
+
+`;
       
       if (isAutoCAD && 'elements' in data) {
         // AutoCAD 정보
-        reportContent += `## AutoCAD 도면 분석 결과\n`;
-        reportContent += `- 총 요소 수: ${data.analysis.totalElements}\n`;
-        reportContent += `- 레이어: ${data.analysis.layers.join(', ')}\n`;
-        reportContent += `- 크기: ${data.analysis.dimensions.width} x ${data.analysis.dimensions.height}\n\n`;
-        
-        // 요소 목록
-        reportContent += `## 요소 목록\n`;
-        data.elements.forEach((element, index) => {
+        reportContent += `[AutoCAD 도면 분석 결과]
+총 요소 수: ${data.analysis.totalElements}
+레이어: ${data.analysis.layers.join(', ')}
+크기: ${data.analysis.dimensions.width} x ${data.analysis.dimensions.height}
+
+[요소 유형별 통계]
+선(Line): ${data.elements.filter(e => e.type === 'line').length}개
+원(Circle): ${data.elements.filter(e => e.type === 'circle').length}개
+텍스트(Text): ${data.elements.filter(e => e.type === 'text').length}개
+
+[요소 목록]
+`;
+        // 요소 목록 (최대 20개까지만)
+        const maxElements = Math.min(data.elements.length, 20);
+        for (let i = 0; i < maxElements; i++) {
+          const element = data.elements[i];
           let details = '';
+          
           if (element.type === 'line') {
             details = `선 (${element.coordinates[0].join(',')} - ${element.coordinates[1].join(',')})`;
           } else if (element.type === 'circle') {
@@ -738,23 +828,59 @@ export class InterpreterService {
             details = `텍스트 "${element.content}" (위치: ${element.position.join(',')})`;
           }
           
-          reportContent += `${index + 1}. ${element.type}: ${details} (레이어: ${element.layer})\n`;
+          reportContent += `${i + 1}. ${element.type}: ${details} (레이어: ${element.layer})\n`;
+        }
+        
+        if (data.elements.length > maxElements) {
+          reportContent += `... 외 ${data.elements.length - maxElements}개 요소\n`;
+        }
+        
+        // 레이어별 분석
+        reportContent += `\n[레이어별 분석]\n`;
+        const layerMap: Record<string, { count: number, types: Record<string, number> }> = {};
+        
+        data.elements.forEach(element => {
+          if (!layerMap[element.layer]) {
+            layerMap[element.layer] = { count: 0, types: {} };
+          }
+          
+          layerMap[element.layer].count++;
+          layerMap[element.layer].types[element.type] = (layerMap[element.layer].types[element.type] || 0) + 1;
         });
-        reportContent += '\n';
+        
+        Object.entries(layerMap).forEach(([layer, info]) => {
+          reportContent += `${layer}: 총 ${info.count}개 요소 (`;
+          const typeInfo = Object.entries(info.types).map(([type, count]) => `${type}: ${count}개`).join(', ');
+          reportContent += `${typeInfo})\n`;
+        });
       } else if (!isAutoCAD && 'content' in data) {
         // HWP 정보
-        reportContent += `## HWP 문서 분석 결과\n`;
-        reportContent += `- 제목: ${data.content.title}\n`;
-        reportContent += `- 페이지 수: ${data.analysis.pageCount}\n`;
-        reportContent += `- 글자 수: ${data.analysis.charCount}\n`;
-        reportContent += `- 이미지 수: ${data.analysis.imageCount}\n\n`;
+        reportContent += `[HWP 문서 분석 결과]
+제목: ${data.content.title}
+페이지 수: ${data.analysis.pageCount}
+글자 수: ${data.analysis.charCount}
+이미지 수: ${data.analysis.imageCount}
+
+[섹션 유형별 통계]
+텍스트(Text): ${data.content.sections.filter(s => s.type === 'text').length}개
+표(Table): ${data.content.sections.filter(s => s.type === 'table').length}개
+이미지(Image): ${data.content.sections.filter(s => s.type === 'image').length}개
+
+[섹션 목록]
+`;
         
-        // 섹션 목록
-        reportContent += `## 섹션 목록\n`;
-        data.content.sections.forEach((section, index) => {
+        // 섹션 목록 (최대 15개까지만)
+        const maxSections = Math.min(data.content.sections.length, 15);
+        for (let i = 0; i < maxSections; i++) {
+          const section = data.content.sections[i];
           let details = '';
+          
           if (section.type === 'text') {
             details = section.content;
+            // 긴 텍스트는 잘라내기
+            if (details.length > 80) {
+              details = details.substring(0, 80) + '...';
+            }
           } else if (section.type === 'table') {
             details = `${section.rows}x${section.columns} 표`;
           } else if (section.type === 'image') {
@@ -762,19 +888,28 @@ export class InterpreterService {
           }
           
           const sectionType = section.type === 'text' ? '텍스트' : section.type === 'table' ? '표' : '이미지';
-          reportContent += `${index + 1}. ${sectionType}: ${details}\n`;
-        });
-        reportContent += '\n';
+          reportContent += `${i + 1}. ${sectionType}: ${details}\n`;
+        }
+        
+        if (data.content.sections.length > maxSections) {
+          reportContent += `... 외 ${data.content.sections.length - maxSections}개 섹션\n`;
+        }
       }
       
       // 해석 추가
       if (data.interpretation) {
-        reportContent += `## 일반인을 위한 해석\n`;
-        reportContent += `${data.interpretation}\n\n`;
+        reportContent += `\n==========================================
+[일반인을 위한 해석]
+==========================================
+${data.interpretation}
+`;
       }
       
-      // 생성 시간 추가
-      reportContent += `\n생성 시간: ${new Date().toLocaleString()}\n`;
+      // 마무리 문구
+      reportContent += `\n==========================================
+이 보고서는 자동 생성되었으며, 전문가의 검토가 필요합니다.
+생성 시간: ${new Date().toLocaleString()}
+==========================================\n`;
       
       return new Blob([reportContent], { type: 'text/plain' });
     } catch (error) {
